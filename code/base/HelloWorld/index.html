@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hello World</title>
+  <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser-arcade-physics.min.js"></script>
+</head>
+<body>
+  <script>
+    class Example extends Phaser.Scene {
+      preload () {
+        this.load.image('sky', '../../assets/sky.png')
+        this.load.image('sun', '../../assets/sun.png')
+        this.load.image('tree', '../../assets/tree.png')
+      }
+
+      create () {
+        this.add.image(413, 221, 'sky')
+
+        const particles = this.add.particles(0, 0, 'sun', {
+          speed: 100,
+          scale: { start: 1, end: 0 },
+          blendMode: 'ADD'
+        })
+
+        const tree = this.physics.add.image(109, 119, 'tree')
+
+        tree.setVelocity(100, 200)
+        tree.setBounce(1, 1)
+        tree.setCollideWorldBounds(true)
+
+        particles.startFollow(tree)
+      }
+    }
+
+    const config = {
+      type: Phaser.AUTO,
+      width: 826,
+      height: 442,
+      scene: Example,
+      physics: {
+        default: 'arcade',
+        arcade: {
+          gravity:  {
+            y: 200
+          }
+        }
+      }
+    }
+
+    const game = new Phaser.Game(config)
+  </script>
+</body>
+</html>

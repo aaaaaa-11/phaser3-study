@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser-arcade-physics.min.js"></script>
+  <title>Part 1</title>
+  <style>
+    body {
+      margin: 0;
+    }
+  </style>
+</head>
+<body>
+  <script type="text/javascript">
+    // 设置游戏配置项
+    var config = {
+      // 游戏的渲染环境，推荐AUTO，可以自动选择
+      type: Phaser.AUTO, // 或 Pharse.CANVAS 或者 Pharse.WEBGL
+      // 画布尺寸
+      width: 800,
+      height: 600,
+      physics: { // 物理系统
+        default: 'arcade', // 游乐场
+        arcade: {
+          gravity: { y: 300 },
+          debug: false
+        }
+      },
+      scene: {
+        preload: preload,
+        create: create,
+        update: update
+      }
+    }
+
+    var game = new Phaser.Game(config); // 创建并保存Phaser游戏实例，传入配置项，启动Pharse
+
+    // 预加载函数，Phaser启动后会自动调用这个函数
+    function preload () {
+      // 调用Phaser加载器Loader，加载内部资源
+      this.load.image('sky', './assets/sky.png')
+      this.load.image('ground', './assets/platform.png')
+      this.load.image('star', './assets/star.png')
+      this.load.image('bomb', './assets/bomb.png')
+      this.load.spritesheet('dude', // 精灵表单 
+        './assets/dude.png',
+        { frameWidth: 32, frameHeight: 48 }
+      );
+    }
+
+    var platforms // 地面&平台
+    var player // 玩家
+    var cursors // 键盘控制
+    var stars // 星星
+    var score = 0 // 分数
+    var scoreText //游戏对象文本
+    var bombs // 炸弹
+    var gameOver = false // 游戏是否结束
+
+    function create () {
+      // 如果有多个图片，按顺序加载图片，后加载的在先加载之上
+      // 注意图片是否超出canvas区域之外
+      this.add.image(400, 300, 'sky') // 将图片定位到canvas的中心点
+      // .setOrigin(0, 0); // 设置图片的原点
+
+      platforms = this.physics.add.staticGroup() // 生成一个静态物理组
+      // Arcade物理系统有 静态 和 动态 两类物体
+      // 动态物体可以有速度、加速度、碰撞、反弹等效果
+      // 静态物体只有位置和尺寸，不受重力影响，不会移动
+
+      // 组内物体可以统一控制
+
+      // 生成平台
+      platforms.create(400, 568, 'ground').setScale(2).refreshBody() // 第一个是地面，铺满canvas底部，所以长度*2
+                                                                     // refreshBody()把这个静态物理的变动（缩放）告诉物理世界
+      platforms.create(600, 400, 'ground')
+      platforms.create(50, 250, 'ground')
+      platforms.create(750, 220, 'ground')
+
+      // 生成玩家
+      player = this.physics.add.sprite(100, 450, 'dude') // 初始位置100, 450像素，this.physics.add生成动态物体
+
+      player.setBounce(0.2) // 0.2反弹值，起跳后着地时会弹起一点
+      player.setCollideWorldBounds(true) // 碰撞世界边界，边界默认在游戏尺寸之外，true把边界设置为canvas大小，玩家跑不出这个区域
+      // player.body.setGravityY(300) // 给玩家一个重力值，值越大，落得越快
+
+      // 设置动画，这里左右分别设置不同帧，不使用Phaser的翻转
+      this.anims.create({
+        key: 'left',
+        frames: this.anims.generateFrameNumbers('dude', { start: 0, end: 3 }), // 精灵图中0~3前4帧向左
+        frameRate: 10, // （跑动时）每秒10帧
+        repeat: -1 // 动画循环播放
+      })
+
+      this.anims.create({
+        key: 'turn', // 转身
+        frames: [ { key: 'dude', frame: 4 } ], // 索引为4的帧面向镜头
+        frameRate: 20
+      })
+
+      this.anims.create({
+        key: 'right',
+        frames: this.anims.generateFrameNumbers('dude', { start: 5, end: 8 }), // 后4帧向右
+        frameRate: 10,
+        repeat: -1
+      })
+      // Phaser3中，动画管理器是全局系统，生成的动画是全局变量，所有游戏都可以使用其包含基础的动画数据，另外还可管理自己的时间轴。
+
+      // 玩家碰撞地面，两者速度交换，地面也会下落
+      // 方法一：生成一个碰撞对象，监控两个物体的碰撞和重叠，调用回调函数
+      // 方法二：使用碰撞器，接收两个对象，检测二者之间的碰撞，并使二者分开。
+      this.physics.add.collider(player, platforms)
+
+      // 使用Phaser内置的键盘管理器，移动玩家
+      cursors = this.input.keyboard.createCursorKeys()
+
+      // 加载星星
+      // 生成一个星星动态物理组（星星要移动、反弹）
+      stars = this.physics.add.group({
+        key: 'star',
+        repeat: 11, // 重复11次，得到12颗星星
+        setXY: { x: 12, y: 0, stepX: 70 } // 先设置x坐标为12，再设置y坐标为0，步长为70，每个星星之间x轴上间隔70
+      })
+
+      stars.children.iterate(function (child) {
+        // 星星掉落地面，会不断反弹、落下，直到稳定
+        child.setBounceY(Phaser.Math.FloatBetween(0.4, 0.8)) // 随机反弹值(0.4~0.8)，反弹必须值在0（不反弹）~1（完全反弹）之间
+      })
+
+      // 给星星和平台添加碰撞器
+      this.physics.add.collider(stars, platforms)
+
+      // 检测星星和玩家重叠事件，如果触发该事件，会调用 collectStar
+      this.physics.add.overlap(player, stars, collectStar, null, this)
+
+      // 设置分数文本
+      scoreText = this.add.text(16, 16, 'score: 0', { fontSize: '32px', fill: '#000' }) // (文本位置，文本内容，文本样式)
+      // 这里没有指定字体，使用phaser默认字体Courier
+
+      bombs = this.physics.add.group()
+
+      this.physics.add.collider(bombs, platforms)
+      this.physics.add.collider(player, bombs, hitBomb, null, this)
+    }
+
+    function collectStar (player, star) {
+      star.disableBody(true, true) // 玩家碰到星星，星星就消失
+
+      score += 10
+      scoreText.setText('Score: ' + score)
+
+      // 每次星星收集完，就重新生成星星，并放一个炸弹
+      if (stars.countActive(true) === 0) {
+        stars.children.iterate(function (child) {
+          child.enableBody(true, child.x, 0, true, true) // 让星星在被收集的x位置重新显示
+                                                         // 但是重置y为0，这样就会从上方落下来
+        })
+
+        // 给炸弹随机生成一个位置，但是要避开玩家
+        // 玩家在左（右），就在右边（左边）生成
+        var x = player.x < 400 ? Phaser.Math.Between(400, 800) : Phaser.Math.Between(0, 400)
+
+        var bomb = bombs.create(x, 16, 'bomb')
+        bomb.setBounce(1) // 会一直反弹
+        bomb.setCollideWorldBounds(true) // 但是弹不出游戏界面
+        bomb.setVelocity(Phaser.Math.Between(-200, 200), 20) // 速度随机
+        bomb.allowGravity = false;
+      }
+    }
+
+    // 碰到炸弹
+    function hitBomb (player, bombs) {
+      this.physics.pause() // 停止游戏
+      player.setTint(0xff0000) // 让玩家变红
+      player.anims.play('turn')
+      gameOver = true
+    }
+
+    function update () {
+      if (gameOver) return
+      // 按键盘移动玩家
+      if (cursors.left.isDown) { // 左键被按下，调用左移动画，向左移动玩家
+        player.setVelocityX(-160)
+        player.anims.play('left', true);
+      } else if (cursors.right.isDown) { // 右键被按下
+        player.setVelocityX(160)
+        player.anims.play('right', true)
+      } else { // 否则转向屏幕，速度为0
+        player.setVelocityX(0)
+        player.anims.play('turn')
+      }
+
+      if (cursors.up.isDown && player.body.touching.down) {
+        player.setVelocityY(-330)
+      }
+    }
+  </script>
+</body>
+</html>
