@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser-arcade-physics.min.js"></script>
+  <title>游戏</title>
+  <style>
+    body {
+      margin: 0;
+    }
+  </style>
+</head>
+<body>
+  <script type="text/javascript">
+    // 设置游戏配置项
+    var config = {
+      // 游戏的渲染环境，推荐AUTO，可以自动选择
+      type: Phaser.AUTO, // 或 Pharse.CANVAS 或者 Pharse.WEBGL
+      // 画布尺寸
+      width: 800,
+      height: 600,
+      physics: { // 物理系统
+        default: 'arcade', // 游乐场
+        arcade: {
+          // gravity: { y: 300 },
+          debug: false
+        }
+      },
+      scene: {
+        preload: preload,
+        create: create,
+        update: update
+      }
+    }
+
+    var game = new Phaser.Game(config); // 创建并保存Phaser游戏实例，传入配置项，启动Pharse
+
+    // 预加载函数，Phaser启动后会自动调用这个函数
+    function preload () {
+      // 调用Phaser加载器Loader，加载内部资源
+      this.load.image('sky', './assets/sky.png')
+      this.load.image('ground', './assets/platform.png')
+      this.load.image('star', './assets/star.png')
+      this.load.image('bomb', './assets/bomb.png')
+      this.load.spritesheet('dude', // 精灵表单 
+        './assets/dude.png',
+        { frameWidth: 32, frameHeight: 48 }
+      );
+    }
+
+    var platforms // 地面&平台
+    var player // 玩家
+    var cursors // 键盘控制
+    var stars // 星星组
+    // var star
+    var score = 0 // 分数
+    var scoreText //游戏对象文本
+    var bombs // 炸弹
+    var gameOver = false // 游戏是否结束
+    var randomGenerator // 随机数生成器
+    var tweens = []
+
+    function generatePlatforms(_this) {
+      platforms = _this.physics.add.staticGroup() // 生成一个静态物理组
+      platforms.create(-100, 216, 'ground')
+      platforms.create(-100, 248, 'ground')
+      platforms.create(-100, 280, 'ground')
+      platforms.create(-100, 312, 'ground')
+      platforms.create(-100, 344, 'ground')
+      platforms.create(-100, 376, 'ground')
+      platforms.create(-100, 408, 'ground')
+      platforms.create(-100, 440, 'ground')
+      platforms.create(-100, 472, 'ground')
+      platforms.create(-100, 504, 'ground')
+      platforms.create(-100, 536, 'ground')
+      platforms.create(900, 216, 'ground')
+      platforms.create(900, 248, 'ground')
+      platforms.create(900, 280, 'ground')
+      platforms.create(900, 312, 'ground')
+      platforms.create(900, 344, 'ground')
+      platforms.create(900, 376, 'ground')
+      platforms.create(900, 408, 'ground')
+      platforms.create(900, 440, 'ground')
+      platforms.create(900, 472, 'ground')
+      platforms.create(900, 504, 'ground')
+      platforms.create(900, 536, 'ground')
+    }
+
+    function generatePlayerAnims(_this) {
+      _this.anims.create({
+        key: 'left',
+        frames: _this.anims.generateFrameNumbers('dude', { start: 0, end: 3 }), // 精灵图中0~3前4帧向左
+        frameRate: 10, // （跑动时）每秒10帧
+        repeat: -1 // 动画循环播放
+      })
+
+      _this.anims.create({
+        key: 'turn', // 转身
+        frames: [ { key: 'dude', frame: 4 } ], // 索引为4的帧面向镜头
+        frameRate: 20
+      })
+
+      _this.anims.create({
+        key: 'right',
+        frames: _this.anims.generateFrameNumbers('dude', { start: 5, end: 8 }), // 后4帧向右
+        frameRate: 10,
+        repeat: -1
+      })
+    }
+    
+    function create () {
+      this.add.image(400, 300, 'sky') // 将图片定位到canvas的中心点
+
+      // 生成平台
+      generatePlatforms(this)
+
+      // 玩家
+      player = this.physics.add.sprite(400, 300, 'dude') // 初始位置100, 450像素，this.physics.add生成动态物体
+      // 键盘管理器
+      cursors = this.input.keyboard.createCursorKeys()
+      // 星星组
+      stars = this.physics.add.group()
+      // 分数文本
+      scoreText = this.add.text(16, 16, 'score: 0', { fontSize: '32px', fill: '#000' }) // (文本位置，文本内容，文本样式)
+      // 炸弹
+      bombs = this.physics.add.group()
+      // 随机数生成器
+      randomGenerator = new Phaser.Math.RandomDataGenerator()
+
+      player.setCollideWorldBounds(true) // 碰撞世界边界，边界默认在游戏尺寸之外，true把边界设置为canvas大小，玩家跑不出这个区域
+
+      // 设置玩家动画
+      generatePlayerAnims(this)
+
+      // 每隔2s生成一颗星星
+      this.timeEvent = this.time.addEvent({ delay: 2000, callback: generateStarsOrBombs, callbackScope: this, loop: true })
+
+
+      // 碰撞器：玩家&地面
+      this.physics.add.collider(player, platforms)
+      // 碰撞器：星星&地面
+      this.physics.add.collider(stars, platforms)
+      // 碰撞器：炸弹&地面
+      this.physics.add.collider(bombs, platforms)
+      // 碰撞器：玩家&星星
+      this.physics.add.collider(player, stars, collectStar, null, this)
+      // 碰撞器：玩家&炸弹
+      this.physics.add.collider(player, bombs, hitBomb, null, this)
+    }
+
+    function generateStarsOrBombs () {
+      const x = randomGenerator.between(100, 300)
+      var obj = Math.random() > 0.5 ? stars.create(x, 0, 'star') : bombs.create(x, 0, 'bomb')
+      // stars.children.iterate(function (child) {
+      //   child.x += 10
+      //   child.y += 10
+      // })
+      tweens[0] = this.tweens.add({
+        x,
+        y: 0,
+        targets: obj,
+        duration: 3000,
+        ease: 'Sine.out',
+        // yoyo: true,
+        // repeat: -1,
+      });
+      tweens[1] = this.tweens.add({
+        x: x + 400,
+        y: 600,
+        targets: obj,
+        duration: 3000,
+        ease: 'Sine.in',
+        // yoyo: true,
+        // repeat: -1,
+      });
+    }
+
+    function collectStar (player, star) {
+      star.disableBody(true, true)
+      score += 10
+      scoreText.setText('Score: ' + score)
+    }
+
+    // 碰到炸弹
+    function hitBomb (player, bombs) {
+      if (score <= 100) {
+        this.physics.pause() // 停止游戏
+        tweens.forEach((tween) => tween.stop())
+        this.time.removeEvent(this.timeEvent)
+        score = 0
+        gameOver = true
+        player.setTint(0xff0000) // 让玩家变红
+        player.anims.play('turn')
+      } else {
+        score -= 100
+      }
+    }
+
+    function update () {
+      if (gameOver) return
+      // 按键盘移动玩家
+      if (cursors.left.isDown) { // 左键被按下，调用左移动画，向左移动玩家
+        player.setVelocityX(-160)
+        player.anims.play('left', true);
+      } else if (cursors.right.isDown) { // 右键被按下
+        player.setVelocityX(160)
+        player.anims.play('right', true)
+      } else if (cursors.up.isDown) {
+        player.y = 250
+      } else { // 否则转向屏幕，速度为0
+        player.setVelocityX(0)
+        player.anims.play('turn')
+        player.y = 300
+      }
+    }
+  </script>
+</body>
+</html>
