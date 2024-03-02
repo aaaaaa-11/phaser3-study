@@ -1,0 +1,8 @@
+@import './style.css';
+#app {
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  background-color: rgba(25, 59, 153, 0.774);
+  color: #fff;
+}

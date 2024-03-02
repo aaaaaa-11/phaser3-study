@@ -10,3 +10,5 @@
 
 
 ## [TypeScript教程（phaser 3）](./phaser3-ts/index.md)
+
+## [Phaser3 learn](./learn/index.md)
