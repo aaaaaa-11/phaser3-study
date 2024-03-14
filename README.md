@@ -9,3 +9,4 @@
 ## JavaScript教程 (phaser 3)
 
 
+## [TypeScript教程（phaser 3）](./phaser3-ts/index.md)
