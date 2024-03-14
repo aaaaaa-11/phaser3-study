@@ -21,6 +21,10 @@ export default class Game extends Phaser.Scene {
   private bookcases: Phaser.GameObjects.Image[] = []
   private windows: Phaser.GameObjects.Image[] = []
   private laserObstacle!: LaserObstacle
+  private coins!: Phaser.Physics.Arcade.StaticGroup
+  private scoreLabel!: Phaser.GameObjects.Text
+  private score = 0
+  private mouse!: RocketMouse
 
   constructor() {
     // 传入一个唯一标识，用来区别其他场景
@@ -124,14 +128,104 @@ export default class Game extends Phaser.Scene {
     }
   }
 
+  private spawnCoins () {
+    // 隐藏且inactive所有硬币
+    this.coins.children.each(child => {
+      const coin = child as Phaser.Physics.Arcade.Sprite
+      this.coins.killAndHide(coin)
+      coin.body.enable = false
+    })
+
+    const scrollX = this.cameras.main.scrollX
+    const rightEdge = scrollX + this.scale.width
+
+    let x = rightEdge + 100
+
+    // 随机创建1~20个
+    const numCoins = Phaser.Math.Between(1, 20)
+
+    for (let i = 0; i < numCoins; i++) {
+      const coin = this.coins.get(
+        x,
+        Phaser.Math.Between(100, this.scale.height - 100),
+        TextureKeys.Coin
+      ) as Phaser.Physics.Arcade.Sprite
+      
+      // active && visible
+      coin.setVisible(true)
+      coin.setActive(true)
+
+      // enable && a circle body
+      const body = coin.body as Phaser.Physics.Arcade.StaticBody
+      body.setCircle(coin.width * 0.5)
+      body.enable = true
+      body.updateFromGameObject() // 更新body到硬币当前visible的位置 
+
+      x += coin.width * 1.5
+      console.log(x);
+      
+    }
+  }
+
+  // 碰到障碍物
   private handleOverlapLaser(obj1: Phaser.GameObjects.GameObject, obj2: Phaser.GameObjects.GameObject) {
-    console.log('overlap');
+    // 第2个是老鼠
+    const mouse = obj2 as RocketMouse
+    mouse.kill()    
+  }
+  // 碰到硬币
+  private handleOverCoin(obj1: Phaser.GameObjects.GameObject, obj2: Phaser.GameObjects.GameObject) {
+    // 第2个是硬币
+    const coin = obj2 as Phaser.Physics.Arcade.Sprite
+    this.coins.killAndHide(coin)
+    coin.body.enable = false
+    this.score++
+    this.scoreLabel.text = `Score: ${this.score}`
+  }
+
+  // 将背景元素移到初始位置，使得角色不能到达边界，形成无线奔跑的效果
+  private teleportBackwards() {
+    const scrollX = this.cameras.main.scrollX
+    const maxX = 2380
     
+    // const maxX = 2500
+    
+    if (scrollX > maxX) {
+      this.spawnCoins() // 在移动其老鼠之前先创建硬币
+      // 因为相机跟随老鼠，先移动老鼠到初始位置，则滚动距离重置为0，再创建硬币，会在边界外
+
+      const laserBody = this.laserObstacle.body as Phaser.Physics.Arcade.StaticBody
+      const gameObjects = [
+        this.mouse,
+        this.mousehole,
+        ...this.windows,
+        ...this.bookcases,
+        this.laserObstacle,
+        laserBody
+      ]
+
+      gameObjects.forEach(go => {
+        go.x -= maxX
+      })
+
+      this.coins.children.each(child => {
+        const coin = child as Phaser.Physics.Arcade.Sprite
+        // if (!coin.active) return
+        coin.x -= maxX
+        const body = coin.body as Phaser.Physics.Arcade.StaticBody
+        body.updateFromGameObject()
+      })
+    }
+  }
+
+  // 在create()和preload()之前调用
+  init() {
+    this.score = 0
   }
 
   // 这些资源放到Preloader场景里加载了
   // preload () {
-  //   // 加载背景图，并指定键名为background
+  //   // 加载背景图，并指定键名为 background
   //   this.load.image('background', 'house/bg_repeat_340x640.png')
 
   //   // 加载精灵图
@@ -202,6 +296,17 @@ export default class Game extends Phaser.Scene {
     this.laserObstacle = new LaserObstacle(this, 900, 100)
     this.add.existing(this.laserObstacle)
 
+    this.coins = this.physics.add.staticGroup()
+    this.spawnCoins()
+
+    this.scoreLabel = this.add.text(10, 10, `Score: ${this.score}`, {
+      fontSize: '24px',
+      color: '#080808',
+      backgroundColor: '#F8E71C',
+      shadow: { fill: true, blur: 0, offsetY: 0 },
+      padding: { left: 15, right: 15, top: 10, bottom: 10 }
+    }).setScrollFactor(0) // 不跟随相机滚动
+
     // 这个精灵图直接用RocketMouse类创建，方便为其添加子元素
     // 创建精灵图（加载的rocket-mouse中的飞行图1）
     // this.add.sprite(
@@ -213,26 +318,48 @@ export default class Game extends Phaser.Scene {
     // )
     // .setOrigin(0.5, 1) // 设置原点在底部正中央
     // .play(AnimationKeys.RocketMouseRun)
-    const mouse = new RocketMouse(this, width * 0.5, height - 30)
-    this.add.existing(mouse) // 将mouse实例添加到游戏场景中
+    this.mouse = new RocketMouse(this, width * 0.5, height - 30)
+    this.add.existing(this.mouse) // 将mouse实例添加到游戏场景中
 
     this.physics.world.setBounds(
       0, 0, // x, y
-      Number.MAX_SAFE_INTEGER, height - 30 // width, height
+      3000, height - 55 // width, height
       // 这里角色会一直运动，但计算机内存有限，所以设置一个最大边界
       // 高度是游戏界面高度减去30，让角色在地板上运动
     )
 
-    this.cameras.main.startFollow(mouse) // 让视角跟随mouse
+    this.cameras.main.startFollow(this.mouse) // 让视角跟随mouse
     this.cameras.main.setBounds(0, 0, Number.MAX_SAFE_INTEGER, height) // 设置相机边界
 
+    // 障碍物碰撞老鼠
     this.physics.add.overlap(
       this.laserObstacle,
-      mouse,
+      this.mouse,
       this.handleOverlapLaser,
       undefined,
       this
     )
+    // 硬币碰撞老鼠
+    this.physics.add.overlap(
+      this.coins,
+      this.mouse,
+      this.handleOverCoin,
+      undefined,
+      this
+    )
+
+    this.mouse.once('dead', () => {
+      if (!this.scene.isActive(SceneKeys.GameOver)) {
+        this.scene.run(SceneKeys.GameOver)
+      }
+      this.input.keyboard.once('keydown-SPACE', () => {
+        this.scene.stop(SceneKeys.GameOver)
+        // 结束并重新开始游戏场景
+        // this.scene.stop(SceneKeys.Game)
+        // this.scene.start(SceneKeys.Game)
+        this.scene.restart()
+      })
+    })
   }
 
   update() {
@@ -243,5 +370,6 @@ export default class Game extends Phaser.Scene {
     this.wrapWindows()
     this.wrapBookcases()
     this.wrapLaserObstacle()
+    this.teleportBackwards()
   }
 }

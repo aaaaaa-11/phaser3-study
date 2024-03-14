@@ -1,6 +1,7 @@
 import Phaser from "phaser";
 import TextureKeys from "../consts/TextureKeys";
 import AnimationKeys from "../consts/AnimationKeys";
+import SceneKeys from "../consts/SceneKeys";
 
 enum MouseState {
   Runing,
@@ -17,11 +18,15 @@ export default class RocketMouse extends Phaser.GameObjects.Container {
   constructor(scene: Phaser.Scene, x: number, y: number) {
     super(scene, x, y);
 
+    // 先创建mouse和flames
     this.mouse = scene.add.sprite(0, 0, TextureKeys.RocketMouse)
       .setOrigin(0.5, 1)
-      .play(AnimationKeys.RocketMouseRun);
-    this.flames = scene.add.sprite(-63, -15, TextureKeys.RocketMouse)
-      .play(AnimationKeys.RocketFlamesOn);
+    this.flames = scene.add.sprite(-63, -15, TextureKeys.RocketMouse)  
+    // 再为对应元素创建动画
+    this.createAnimations()
+    // 再执行动画
+    this.mouse.play(AnimationKeys.RocketMouseRun);
+    this.flames.play(AnimationKeys.RocketFlamesOn);
 
     // 将mouse作为child添加到RocketMouse
     this.add(this.flames) // 先添加火焰，所以火焰会在老鼠下面
@@ -32,13 +37,69 @@ export default class RocketMouse extends Phaser.GameObjects.Container {
     const body = this.body as Phaser.Physics.Arcade.Body
     body.setCollideWorldBounds(true) // 边界
     // 偏移
-    body.setSize(this.mouse.width, this.mouse.height)
-    body.setOffset(this.mouse.width * -0.5, -this.mouse.height)
+    body.setSize(this.mouse.width * 0.5, this.mouse.height * 0.7)
+    body.setOffset(this.mouse.width * -0.3, -this.mouse.height)
     // x轴速度
     body.setVelocity(200)
 
     this.cursors = scene.input.keyboard.createCursorKeys() // CursorKeys实例，方便访问四个方向键和空格键
-    this.kill()
+    // this.kill()
+  }
+
+  // 创建动画
+  private createAnimations() {
+    const mouse = this.mouse
+    const flames = this.flames
+    // 跑
+    mouse.anims.create({
+      key: AnimationKeys.RocketMouseRun, // 动画名称
+      frames: mouse.anims.generateFrameNames(TextureKeys.RocketMouse, {
+        start: 1,
+        end: 4,
+        prefix: 'rocketmouse_run',
+        zeroPad: 2,
+        suffix: '.png'
+      }),
+      frameRate: 10,
+      repeat: -1 // -1代表无限循环
+    })
+    // 飞
+    mouse.anims.create({
+      key: AnimationKeys.RocketMouseFly,
+      frames: [
+        { key: TextureKeys.RocketMouse, frame: 'rocketmouse_fly01.png' },
+      ]
+    })
+    // 落
+    mouse.anims.create({
+      key: AnimationKeys.RocketFlamesFall,
+      frames: [
+        { key: TextureKeys.RocketMouse, frame: 'rocketmouse_fall01.png' },
+      ]
+    })
+    // 死
+    mouse.anims.create({
+      key: AnimationKeys.RocketMouseDead,
+      frames: mouse.anims.generateFrameNames(TextureKeys.RocketMouse, {
+        start: 1,
+        end: 2,
+        prefix: 'rocketmouse_dead0',
+        suffix: '.png'
+      }),
+      frameRate: 10
+    })
+    // 喷火
+    flames.anims.create({
+      key: AnimationKeys.RocketFlamesOn,
+      frames: flames.anims.generateFrameNames(TextureKeys.RocketMouse, {
+        start: 1,
+        end: 2,
+        prefix: 'flame',
+        suffix: '.png'
+      }),
+      frameRate: 10,
+      repeat: -1
+    })
   }
 
   // 开/关 喷气式火焰
@@ -48,6 +109,8 @@ export default class RocketMouse extends Phaser.GameObjects.Container {
 
   kill() {
     if (this.mouseState !== MouseState.Runing) return
+    console.log('kill');
+    
 
     this.mouseState = MouseState.killed
     this.mouse.play(AnimationKeys.RocketMouseDead)
@@ -88,6 +151,10 @@ export default class RocketMouse extends Phaser.GameObjects.Container {
       }
       case MouseState.Dead: {
         body.setVelocity(0, 0)
+        this.emit('dead')
+        // if (!this.scene.scene.isActive(SceneKeys.GameOver)) {
+        //   this.scene.scene.run(SceneKeys.GameOver)
+        // }
         break
       }
     }

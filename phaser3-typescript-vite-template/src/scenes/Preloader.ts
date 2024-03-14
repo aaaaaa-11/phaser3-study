@@ -30,6 +30,8 @@ export default class Preloader extends Phaser.Scene {
     this.load.image(TextureKeys.LaserEnd, 'house/object_laser_end.png')
     this.load.image(TextureKeys.LaserMiddle, 'house/object_laser.png')
 
+    this.load.image(TextureKeys.Coin, 'house/object_coin.png')
+
     // 加载精灵图
     this.load.atlas(
       TextureKeys.RocketMouse,
@@ -39,58 +41,6 @@ export default class Preloader extends Phaser.Scene {
   }
 
   create () {
-    // 创建动画
-    // 跑
-    this.anims.create({
-      key: AnimationKeys.RocketMouseRun, // 动画名称
-      frames: this.anims.generateFrameNames(TextureKeys.RocketMouse, {
-        start: 1,
-        end: 4,
-        prefix: 'rocketmouse_run',
-        zeroPad: 2,
-        suffix: '.png'
-      }),
-      frameRate: 10,
-      repeat: -1 // -1代表无限循环
-    })
-    // 喷火
-    this.anims.create({
-      key: AnimationKeys.RocketFlamesOn,
-      frames: this.anims.generateFrameNames(TextureKeys.RocketMouse, {
-        start: 1,
-        end: 2,
-        prefix: 'flame',
-        suffix: '.png'
-      }),
-      frameRate: 10,
-      repeat: -1
-    })
-    // 飞
-    this.anims.create({
-      key: AnimationKeys.RocketMouseFly,
-      frames: [
-        { key: TextureKeys.RocketMouse, frame: 'rocketmouse_fly01.png' },
-      ]
-    })
-    // 落
-    this.anims.create({
-      key: AnimationKeys.RocketFlamesFall,
-      frames: [
-        { key: TextureKeys.RocketMouse, frame: 'rocketmouse_fall01.png' },
-      ]
-    })
-    // 死
-    this.anims.create({
-      key: AnimationKeys.RocketMouseDead,
-      frames: this.anims.generateFrameNames(TextureKeys.RocketMouse, {
-        start: 1,
-        end: 2,
-        prefix: 'rocketmouse_dead0',
-        suffix: '.png'
-      }),
-      frameRate: 10
-    })
-
     // preload()中资源加载完，会自动执行create()，所以此时可以加载游戏场景了
     this.scene.start(SceneKeys.Game)
   }

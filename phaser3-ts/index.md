@@ -1,4 +1,4 @@
-# [Infinite Runner in Phaser 3 with TypeScript](https://blog.ourcade.co/)
+# 学习资源：[Infinite Runner in Phaser 3 with TypeScript](https://blog.ourcade.co/)
 
 ## 介绍
 
@@ -247,6 +247,76 @@ this.physics.add.overlap(target, [bodies], [overlapCallback], [processCallback],
 
 ## 游戏结束和重玩
 
+1. 创建场景
+创建一个平行于游戏场景的[游戏结束场景](../phaser3-typescript-vite-template/src/scenes/GameOver.ts)，里面可以放一些如分数、暂停、弹窗等UI显示。
+
+文字样式设计可以使用[phaser3-text-styler](https://ourcade.co/tools/phaser3-text-styler/)网站。
+
+2. 监听角色死亡
+
+可以在角色状态改变为死亡时，停止游戏，然后监听键盘事件，在指定键按下时重玩游戏
+
+方法一：直接在状态改变的地方监听键盘事件（在角色类中修改场景）
+
+方法二：状态改变后触发角色死亡事件，在游戏场景监听角色死亡事件并控制场景切换（在场景类中修改场景）
+
+另外，结束并重新开始场景的方法：
+```ts
+// 方法一
+this.scene.stop(SceneKeys.Game)
+this.scene.start(SceneKeys.Game)
+// 方法二
+this.scene.restart()
+```
+
 ## 添加硬币并收集
 
+本游戏得分：收集硬币、角色跑出的距离
+
+1. 加载硬币图
+2. 创建多个硬币
+
+Phaser Group可以创建一组能循环使用的GameObjects，使用group创建硬币，当硬币掉落屏幕外也不需要销毁重新创建。
+
+staticGroup静态组，创建的元素不受重力影响，可以漂浮在空中。
+
+3. 周期性创建硬币
+
+问题：硬币的body还在原来的位置
+
+解决：updateFromGameObject() // 更新body到硬币当前visible的位置 
+
 ## 飞向无限
+
+设置物理世界的边界
+```ts
+this.physics.world.setBounds(
+  x, y,
+  width, height
+)
+// 当游戏角色跑出的距离达到width，就只能原地踏步，不能再前进了（角色设置了碰撞边界setCollideWorldBounds(true)）
+```
+
+可以设置一个距离，超过这个距离就回到原点，在视觉上达到可以无限奔跑的效果。
+
+设置一个无缝传输：当滚动到一个指定位置maxX时，向后移动所有创建的GameObjects
+
+问题1：背景使用TileSprite平铺背景，传输火箭鼠后修改其位置，让其回到初始位置，但是让背景减去maxX达不到效果
+
+（相机跟随老鼠，当滚动距离超过maxX，老鼠回到初始位置，相机也是，背景平铺位置会随相机位置移动）
+
+（猜测应该是这样的：）
+![背景直接减去移动距离](./image.png)
+
+解决办法一：创建4张背景图，然后随着屏幕滚动循环平铺
+
+解决方法二：设置maxX为背景图宽度的倍数
+
+问题2：硬币会突然消失
+
+原因：指定在滚动到第二个书架位置创建硬币，可能当时上一组硬币还在，这是创建硬币的方法会把当前位置硬币隐藏，然后修改位置为边界外随机位置。
+
+解决：在无缝传输时创建硬币（或修改硬币位置）
+
+
+Phaser3.5允许单个精灵图用指定动画或者本地动画，所以可以创建全局动画供任意精灵图使用
