@@ -72,3 +72,20 @@ GetFirst(items, compare, [index]);
 [code](../phaser3-examples/src/views/actions/get-first.vue)
 
 ## Grid Align Animations
+
+```js
+/**
+ * 根据给定options网格排列游戏对象或任意含有共有属性x、y的对象
+ * @param {array | Array.<Phaser.GameObjects.GameObject>} items
+ * @param {Phaser.Types.Actions.GridAlignConfig} options 可选 网格排列选项 参考：https://newdocs.phaser.io/docs/3.80.0/Phaser.Types.Actions.GridAlignConfig
+ * options：以下均为number类型
+ * width 默认-1，标识items的宽（非px），-1表示所有item按水平排列，如果height也设置-1，则height会被覆盖而不生效
+ * height 默认-1，和width类似，纵向排列
+ * cellWidth、cellHeight 默认1，单元格宽高（px），item位于单元格之中
+ * position 默认0，取值参考Phaser.Display.Align，例如TOP_LEFT
+ * x、y 默认0，将最终网格的左上角放到此位置
+ */
+GridAlign(items, options);
+```
+
+[code](../phaser3-examples/src/views/actions/grid-align-animation.vue)
