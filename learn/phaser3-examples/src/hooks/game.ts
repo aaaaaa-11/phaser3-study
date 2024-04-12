@@ -6,7 +6,7 @@ const ORIGIN = location.origin // 项目域名
 // canvas大小
 const WIDTH = innerWidth * 0.8
 const HEIGHT = innerHeight * 0.8
-let game: Phaser.Game
+const game = ref<Phaser.Game>()
 
 type Image = Phaser.GameObjects.Image
 type Sprite = Phaser.GameObjects.Sprite
@@ -20,7 +20,9 @@ interface Options {
   imgPaths?: string[]
   spritePaths?: SpriteConfig[]
   addRect?: boolean
+  addImg?: boolean
   createFun?: () => void
+  updateFun?: () => void
 }
 
 enum GameState {
@@ -33,7 +35,14 @@ export class CustomScene extends Phaser.Scene {
 }
 
 export default function useGame(options: Options) {
-  const { imgPaths, spritePaths, createFun, addRect } = options
+  const {
+    imgPaths,
+    spritePaths,
+    addRect,
+    addImg = true,
+    createFun,
+    updateFun
+  } = options
 
   let images: Image[] = []
   let sprites: Sprite[] = []
@@ -52,11 +61,13 @@ export default function useGame(options: Options) {
       // 加载图片
       imgPaths?.forEach((path, i) => {
         const key = 'img' + i
+        this.imgKeys.push(key)
         this.load.image(key, ORIGIN + path)
       })
       // 加载图片
       spritePaths?.forEach(({ path, config }, i) => {
         const key = 'sprite' + i
+        this.imgKeys.push(key)
         this.load.spritesheet(key, ORIGIN + path, config)
       })
     }
@@ -71,11 +82,10 @@ export default function useGame(options: Options) {
       const imgLen = imgPaths?.length || 0
       const spriteLen = spritePaths?.length || 0
       const len = Math.max(imgLen, spriteLen)
-      if (len) {
+      if (len && addImg) {
         for (let i = 0; i < len; i++) {
           if (imgLen) {
             const key = `img${i}`
-            this.imgKeys.push(key)
             const img = this.add
               .image(WIDTH * 0.5, HEIGHT * 0.5, key)
               .setOrigin(0, 0)
@@ -84,7 +94,6 @@ export default function useGame(options: Options) {
           }
           if (spriteLen) {
             const key = `sprite${i}`
-            this.imgKeys.push(key)
             const sprite = this.add
               .sprite(WIDTH * 0.5, HEIGHT * 0.5, key)
               .setOrigin(0, 0)
@@ -95,6 +104,10 @@ export default function useGame(options: Options) {
       }
       gameState.value = GameState.CREATE
       createFun?.apply(this)
+    }
+
+    update() {
+      updateFun?.apply(this)
     }
 
     destroyed() {
@@ -116,12 +129,12 @@ export default function useGame(options: Options) {
       pixelArt: true,
       scene: Scene
     }
-    game = new Phaser.Game(config)
+    game.value = new Phaser.Game(config)
   })
 
   onUnmounted(() => {
     // 销毁游戏
-    game.destroy(true)
+    game.value?.destroy(true)
     images = []
     sprites = []
   })
@@ -133,6 +146,7 @@ export default function useGame(options: Options) {
     images,
     sprites,
     gameState,
-    GameState
+    GameState,
+    game
   }
 }

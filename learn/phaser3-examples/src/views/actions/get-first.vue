@@ -22,7 +22,7 @@
       @change="getFirstItem"
     >
       <option value="">不选</option>
-      <option v-for="i in imgFrames" :key="i" :value="i">{{ i }}</option>
+      <option v-for="i in imgKeys" :key="i" :value="i">{{ i }}</option>
     </select>
     {{ error }}
   </p>
@@ -30,13 +30,9 @@
 
 <script setup lang="ts">
 import Phaser from 'phaser'
-import { onMounted, onUnmounted, ref, reactive } from 'vue'
-
-const origin = location.origin // 项目域名
-
-// canvas大小
-const WIDTH = innerWidth * 0.8
-const HEIGHT = innerHeight * 0.8
+import { ref, reactive } from 'vue'
+import useGame from '@/hooks/game'
+import type { CustomScene } from '@/hooks/game'
 
 // 图片地址
 const IMGPATHS = [
@@ -52,14 +48,6 @@ const IMGPATHS = [
   '/game/star.png',
   '/fruits/fruit_watermelon_100.png'
 ]
-// 图片key
-const imgFrames = Array(IMGPATHS.length)
-  .fill(0)
-  .map((_, i) => 'img' + i)
-// 存储图片
-const sprites: Phaser.GameObjects.Image[] = []
-
-let game: Phaser.Game
 
 const error = ref('') // 未获取到元素时的提示信息
 // 条件对象
@@ -69,52 +57,45 @@ const compareForm = reactive({
 })
 
 const framesList = ref<[string, number][]>([])
+const imgKeys = ref<string[]>([])
 
-// 场景
-class Example extends Phaser.Scene {
-  constructor() {
-    super()
-  }
-
-  preload() {
-    // 加载图片
-    IMGPATHS.forEach((path, i) => {
-      this.load.image('img' + i, origin + path)
-    })
-  }
-
-  create() {
+// 初始化游戏
+const { images, WIDTH, HEIGHT, game } = useGame({
+  imgPaths: IMGPATHS,
+  addRect: true,
+  createFun: function () {
+    const self = this as CustomScene
+    imgKeys.value = self.imgKeys
     // 加载图片
     for (let i = 0; i < IMGPATHS.length; i++) {
       const x = Phaser.Math.Between(0, WIDTH - 400)
       const y = Phaser.Math.Between(0, HEIGHT - 400)
-      const img = this.add.image(x, y, imgFrames[i]).setOrigin(0, 0)
+      images[i].setPosition(x, y)
       const scale = +Phaser.Math.Between(1, 4).toFixed(1)
-      framesList.value.push([imgFrames[i], scale])
-      img.setScale(scale)
-      sprites.push(img)
+      framesList.value.push([self.imgKeys[i], scale])
+      images[i].setScale(scale)
     }
-
     // 监听条件修改，获取满足条件的元素
-    this.game.events.on('findFirstItem', () => {
+    self.game.events.on('findFirstItem', () => {
+      console.log('on')
       // 条件对象
       const compare: Record<string, unknown> = { scale: compareForm.scale }
       if (compareForm.img) {
-        const frame = this.textures.getFrame(compareForm.img, 0)
+        const frame = self.textures.getFrame(compareForm.img, 0)
         compare.frame = frame
       }
       // 获取满足条件的第一个元素
       const item = Phaser.Actions.GetFirst(
-        sprites,
+        images,
         compare
       ) as Phaser.GameObjects.Image
       // 元素存在
       if (item) {
         error.value = ''
         const originScale = item.scale
-        this.children.bringToTop(item) // 放到最上面
+        self.children.bringToTop(item) // 放到最上面
         // 动画，将该元素放大至原始尺寸的5倍，然后再还原
-        this.tweens.chain({
+        self.tweens.chain({
           targets: item,
           tweens: [
             {
@@ -135,28 +116,10 @@ class Example extends Phaser.Scene {
       }
     })
   }
-}
+})
 
 // 获取满足条件的第一个元素
 const getFirstItem = () => {
-  game.events.emit('findFirstItem')
+  game.value?.events.emit('findFirstItem')
 }
-
-onMounted(() => {
-  // 加载游戏场景
-  const config = {
-    type: Phaser.AUTO,
-    width: WIDTH,
-    height: HEIGHT,
-    backgroundColor: '#2d2d2d',
-    parent: 'game',
-    pixelArt: true,
-    scene: Example
-  }
-  game = new Phaser.Game(config)
-})
-
-onUnmounted(() => {
-  game.destroy(true)
-})
 </script>

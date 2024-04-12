@@ -1,28 +1,5 @@
 <template>
   <p>
-    方向：
-    <label for="direction1">
-      <input
-        type="radio"
-        name="direction"
-        id="direction1"
-        :value="animationKey.WALK_LEFT"
-        class="text-gray-800"
-        :checked="formState.direction === animationKey.WALK_LEFT"
-        @change="changeDirection"
-      />朝左</label
-    >
-    <label for="direction2" class="mr-4">
-      <input
-        type="radio"
-        name="direction"
-        id="direction2"
-        :value="animationKey.WALK_RIGHT"
-        :checked="formState.direction === animationKey.WALK_RIGHT"
-        class="text-gray-800 ml-3"
-        @change="changeDirection"
-      />朝右</label
-    >
     <Align ref="alignRef" :items="sprites" @changeAlignTo="updateGridAlign" />
   </p>
   <p>
@@ -84,16 +61,9 @@ import type { CustomScene } from '@/hooks/game'
 
 import Align from '@/components/align.vue'
 
-// 动画key
-const animationKey = {
-  WALK_LEFT: 'walk-left',
-  WALK_RIGHT: 'walk-right'
-}
-
 // 条件对象
 const formState = reactive({
-  direction: animationKey.WALK_RIGHT,
-  width: 10,
+  width: 5,
   height: 10,
   cellWidth: 50,
   cellHeight: 50,
@@ -103,6 +73,8 @@ const formState = reactive({
 
 const alignRef = ref()
 const activeAlign: Ref<AlignKey> = computed(() => alignRef.value?.activeAlign)
+
+let group: Phaser.GameObjects.Group | null = null
 
 // 创建游戏界面
 const { sprites } = useGame({
@@ -119,45 +91,19 @@ const { sprites } = useGame({
   createFun: function () {
     const self = this as CustomScene
     const frameKey = self.imgKeys[0]
-    // 创建动画
-    self.anims.create({
-      key: animationKey.WALK_LEFT,
-      frames: self.anims.generateFrameNumbers(frameKey, {
-        start: 0,
-        end: 3
-      }),
-      frameRate: 16,
-      repeat: -1
-    })
-    self.anims.create({
-      key: animationKey.WALK_RIGHT,
-      frames: self.anims.generateFrameNumbers(frameKey, {
-        start: 5,
-        end: 8
-      }),
-      frameRate: 16,
-      repeat: -1
-    })
 
-    for (let i = 0; i < 30; i++) {
-      // 添加图片并播放动画
-      sprites.push(self.add.sprite(0, 0, frameKey).play(formState.direction))
-    }
+    group = self.add.group({
+      key: frameKey,
+      frame: [0, 1, 4, 5, 6],
+      frameQuantity: 5
+    })
 
     updateGridAlign()
   }
 })
 
-// 改变方向
-const changeDirection = (e: Event) => {
-  formState.direction = (e.target as HTMLInputElement).value
-  sprites.forEach((s) => {
-    s.play(formState.direction)
-  })
-}
-
 const updateGridAlign = () => {
-  Phaser.Actions.GridAlign(sprites, {
+  Phaser.Actions.GridAlign((group as Phaser.GameObjects.Group).getChildren(), {
     width: formState.width,
     height: formState.height,
     cellWidth: formState.cellWidth,

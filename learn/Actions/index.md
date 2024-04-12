@@ -3,7 +3,9 @@
 - [Align To](#align-to)
 - [Angle](#angle)
 - [Get First](#get-first)
-- [Grid Align Animations](#grid-align-animations)
+- [Grid Align](#grid-align)
+- [IncXY](#incxy)
+- [PlaceOnXXX](#placeonxxx)
 
 ## Align To
 
@@ -71,7 +73,7 @@ GetFirst(items, compare, [index]);
 
 [code](../phaser3-examples/src/views/actions/get-first.vue)
 
-## Grid Align Animations
+## Grid Align
 
 ```js
 /**
@@ -88,4 +90,127 @@ GetFirst(items, compare, [index]);
 GridAlign(items, options);
 ```
 
+当 cellWidth 小于 items 中元素的宽度，会看到元素一个叠着一个：
+
+[code](../phaser3-examples/src/views/actions/grid-align-overlap.vue)
+
+给元素加动画：
+
 [code](../phaser3-examples/src/views/actions/grid-align-animation.vue)
+
+可以使用组：group.getChildren()作为 items
+
+[code](../phaser3-examples/src/views/actions/grid-align-animation.vue)
+
+## IncXY
+
+```js
+/**
+ * 将给定的值添加到每个item（游戏对象或任意有x、y属性的对象）上
+ * @param {array | Array.<Phaser.GameObjects.GameObject>} items
+ * @param {number} x 加到item.x上
+ * @param {number} y 加到item.y上
+ * @param {number} stepX 加到item.x上，乘以迭代器
+ * @param {number} stepY 加到item.y上，乘以迭代器
+ * @param {number} index items中开始的索引
+ * @param {number} direction items遍历方向，1从头到尾，-1从尾到头
+ */
+IncXY(items, x, [y], [stepX], [stepY], [index], [direction]);
+```
+
+类似的属性
+
+- IncY
+- IncX
+
+参数：(items, value, [step], [index], [direction])
+value、step 对应 x（y）、stepX（stepY）
+
+x、y、stepX、stepY 都会加到元素当前位置上，例如
+
+s1: 初始(x, y) = (0, 0)
+
+s2: 设置 IncXY(2, 3) item 的(x, y) = (2, 3)
+
+s3: 设置 IncXY(-2, 1) item 的(x, y) = (2 - 2, 3 + 1) = (0, 4)
+
+[code](../phaser3-examples/src/views/actions/incXY.vue)
+
+## PlaceOnXXX
+
+将元素放置到指定图形的轮廓线上
+
+[code](../phaser3-examples/src/views/actions/place-on-circle.vue)
+
+1. PlaceOnCircle
+
+将元素均匀的放到圆圈边缘的点上
+
+```js
+/**
+ * @param {array | Array.<Phaser.GameObjects.GameObject>} items
+ * @param {Phaser.Geom.Circle} circle 如果是Phaser.GameObjects.Circle，传入其geom属性
+ * @param {number} startAngle 默认0 弧度值，开始位置
+ * @param {number} endAngle 默认6.28
+ * 即：将items均匀地放在startAngle~endAngle之间的弧线（可能是一圈、几圈、半圈...圆）上
+ */
+PlaceOnCircle(items, circle, [startAngle], [endAngle]);
+```
+
+2. PlaceOnEllipse
+
+将元素均匀的放到椭圆边缘的点上
+
+```js
+/**
+ * @param {Phaser.Geom.Ellipse} ellipse 椭圆，如果是 Phaser.GameObjects.Ellipse，需要传geom属性
+ */
+PlaceOnEllipse(items, ellipse, [startAngle], [endAngle]);
+```
+
+3. PlaceOnLine
+
+将元素均匀的放到线上
+
+```js
+/**
+ * @param {Phaser.Geom.Line} line
+ */
+PlaceOnLine(items, line);
+```
+
+4. PlaceOnRectangle
+
+将元素均匀的放到矩形上，从左上角开始，顺时针，可以根据 shift 设置偏移
+
+```js
+/**
+ * @param {Phaser.Geom.Rectangle} rect
+ * @param {number} shift 位置偏移
+ */
+PlaceOnRectangle(items, rect, [shift]);
+```
+
+5. PlaceOnRectangle
+
+将元素均匀的放到矩形上，从左上角开始，顺时针，可以根据 shift 设置偏移
+
+```js
+/**
+ * @param {Phaser.Geom.Triangle} rect
+ * @param {number} stepRate 位置偏移
+ */
+PlaceOnTriangle(items, triangle, [stepRate]);
+```
+
+# RandomXXX
+
+和[PlaceOnXXX](#placeonxxx)类似，将元素随机填充到指定图形内，注意 RamdomXXX(items, geo)没有多余的参数
+
+[code](../phaser3-examples/src/views/actions/place-on-circle.vue)
+
+1. RandomCircle(items, circle)
+2. RandomEllipse(items, ellipse)
+3. RandomLine(items, line)
+4. RandomRectangle(items, rect)
+5. RandomTriangle(items, triangle)
