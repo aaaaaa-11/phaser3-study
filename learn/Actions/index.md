@@ -6,6 +6,9 @@
 - [Grid Align](#grid-align)
 - [IncXY](#incxy)
 - [PlaceOnXXX](#placeonxxx)
+- [RandomXXX](#randomxxx)
+- [RotateXXX](#rotatexxx)
+- [SetXXX](#setxxx)
 
 ## Align To
 
@@ -50,7 +53,7 @@ Phaser.Actions.AlignTo(
 /**
  * @param {array|Array.<Phaser.GameObjects.GameObject>} items 作用对象，需要包含角度属性
  * @param {number} value 角度值
- * @param {number} step 第i个对象的角度=value + step * i，默认0
+ * @param {number} step items[i].angle = items[i].angle + value + step * i，step默认0
  * @param {number} index 从索引为index的元素开始，默认0
  * @param {number} direction 遍历方向，1从头往后遍历，-1从后向前遍历
  */
@@ -110,8 +113,8 @@ GridAlign(items, options);
  * @param {array | Array.<Phaser.GameObjects.GameObject>} items
  * @param {number} x 加到item.x上
  * @param {number} y 加到item.y上
- * @param {number} stepX 加到item.x上，乘以迭代器
- * @param {number} stepY 加到item.y上，乘以迭代器
+ * @param {number} stepX item.x = item.x + x + stepX * i
+ * @param {number} stepY item.y操作同上
  * @param {number} index items中开始的索引
  * @param {number} direction items遍历方向，1从头到尾，-1从尾到头
  */
@@ -203,7 +206,7 @@ PlaceOnRectangle(items, rect, [shift]);
 PlaceOnTriangle(items, triangle, [stepRate]);
 ```
 
-# RandomXXX
+## RandomXXX
 
 和[PlaceOnXXX](#placeonxxx)类似，将元素随机填充到指定图形内，注意 RamdomXXX(items, geo)没有多余的参数
 
@@ -214,3 +217,114 @@ PlaceOnTriangle(items, triangle, [stepRate]);
 3. RandomLine(items, line)
 4. RandomRectangle(items, rect)
 5. RandomTriangle(items, triangle)
+
+## RotateXXX
+
+[code]()
+
+1. Rotate
+   旋转
+
+```js
+/**
+ * @param	{array | Array.<Phaser.GameObjects.GameObject>} items
+ * @param {number} value 添加到旋转属性rotation上的值
+ * @param {number} step items[i].rotation += value + step * i
+ * @param {number} index 开始索引
+ * @param {number} direction 1，从头遍历，-1从尾遍历
+ */
+Rotate(items, value, [step], [index], [direction]);
+```
+
+2. RotateAround
+
+将每个元素按照指定点旋转指定角度
+
+```js
+/**
+ * @param	{array | Array.<Phaser.GameObjects.GameObject>} items
+ * @param {object} point 含有公有属性x、y的对象
+ * @param {number} angle 旋转角度，弧度值
+ */
+RotateAround(items, point, angle);
+```
+
+3. RotateAroundDistance
+
+将每个元素按照指定点旋转指定角度和距离
+
+```js
+/**
+ * @param	{array | Array.<Phaser.GameObjects.GameObject>} items
+ * @param {object} point 含有公有属性x、y的对象
+ * @param {number} angle 旋转角度，弧度值
+ * @param {number} distance 旋转点距离，px
+ */
+RotateAroundDistance(items, point, angle, distance);
+```
+
+一个 demo：[让 container 面朝 center 旋转](../phaser3-examples/src/views/actions/rotate-container-facing-point.vue)
+
+解析：
+
+![让 container 面朝 center 旋转](./containerFacePoint.png)
+
+## SetXXX
+
+[code](../phaser3-examples/src/views/actions/)
+
+1. SetAlpha
+
+设置透明度
+
+```js
+/**
+ * @param {array | Array.<Phaser.GameObjects.GameObject>} items
+ * @param {number} value alpha值
+ * @param {number} step items[i].alpha += value + step * i
+ * @param {number} index 从索引为index的元素开始操作
+ * @param {number} direction 遍历方向，1从头开始，-1从尾开始
+ */
+SetAlpha(items, value, [step], [index], [direction]);
+```
+
+2. SetBlendMode
+
+设置混合模式，两个粒子重叠构造出一种新的颜色
+
+具体含义和可选模式参考：https://newdocs.phaser.io/docs/3.80.0/Phaser.BlendModes
+
+3. SetDepth
+4. SetX
+5. SetY
+6. SetXY
+7. SetScrollFactorX
+8. SetScrollFactorY
+9. SetScrollFactor
+
+参考：https://newdocs.phaser.io/docs/3.80.0/Phaser.GameObjects.Components.ScrollFactor
+
+设置滚动因子，控制相机移动对游戏对象的影响。
+
+默认 1，和相机同步移动；为 0 时相机移动，items 不会移动
+
+计算物理碰撞时，不会考虑 1 以外的滚动因子
+
+10. SetRotation
+11. SetScaleX
+12. SetScaleY
+13. SetScaleXY
+
+缩放相对元素原始大小，value 为倍数
+
+14. SetTint
+
+分别设置 4 个方向的色调或只设置 topLeft 来应用于所有元素
+
+hex 数值型，例如 0xff0000 表示红色，默认 0xffffff 15. SetVisible
+
+设置可见性：true / false
+
+16. SetOrigin
+
+值表示 item.size \* value

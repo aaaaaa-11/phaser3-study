@@ -45,3 +45,44 @@ export const PlaceOnTextMap = {
   [PLACE_ON.RANDOM_RECTANGLE]: '矩形随机填充',
   [PLACE_ON.RANDOM_TRIANGLE]: '三角形随机填充'
 }
+
+export enum ROTATE_TYPE {
+  ROTATE = 'Rotate',
+  ROTATE_AROUND = 'RotateAround',
+  ROTATE_AROUND_DISTANCE = 'RotateAroundDistance'
+}
+
+// RotateXXX对应的描述
+export const RotateTextMap = {
+  [ROTATE_TYPE.ROTATE]: '旋转对应角度',
+  [ROTATE_TYPE.ROTATE_AROUND]: '绕点旋转对应角度',
+  [ROTATE_TYPE.ROTATE_AROUND_DISTANCE]: '绕点旋转对应角度和距离'
+}
+
+export enum SET_TYPE {
+  SET_ALPHA = 'SetAlpha',
+  SET_BLEND_MODE = 'SetBlendMode',
+  SET_DEPTH = 'SetDepth',
+  SET_HIT_AREA = 'SetHitArea',
+  SET_ORIGIN = 'SetOrigin',
+  SET_ROTATION = 'SetRotation',
+  SET_SCALE = 'SetScale',
+  SET_SCALE_X = 'SetScaleX',
+  SET_SCALE_Y = 'SetScaleY',
+  SET_SCROLL_FACTOR = 'SetScrollFactor',
+  SET_SCROLL_FACTOR_X = 'SetScrollFactorX',
+  SET_SCROLL_FACTOR_Y = 'SetScrollFactorY',
+  SET_TINT = 'SetTint',
+  SET_VISIBLE = 'SetVisible',
+  SET_X = 'SetX',
+  SET_Y = 'SetY',
+  SET_XY = 'SetXY'
+}
+
+export const BlendModesMap = {
+  NORMAL: Phaser.BlendModes.NORMAL,
+  ADD: Phaser.BlendModes.ADD,
+  MULTIPLY: Phaser.BlendModes.MULTIPLY,
+  SCREEN: Phaser.BlendModes.SCREEN,
+  ERASE: Phaser.BlendModes.ERASE
+}
