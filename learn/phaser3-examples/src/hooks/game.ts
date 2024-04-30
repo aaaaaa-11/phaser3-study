@@ -127,7 +127,13 @@ export default function useGame(options: Options) {
       backgroundColor: '#2d2d2d',
       parent: 'game',
       pixelArt: true,
-      scene: Scene
+      scene: Scene,
+      physics: {
+        default: 'arcade',
+        arcade: {
+          debug: false
+        }
+      }
     }
     game.value = new Phaser.Game(config)
   })

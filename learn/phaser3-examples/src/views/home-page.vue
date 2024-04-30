@@ -1,5 +1,5 @@
 <template>
-  <div class="home-page px-4 py-2">
+  <div class="home-page px-4 py-2 overflow-auto max-h-screen">
     <ul
       class="flex flex-wrap text-center text-xl font-bold"
       v-if="!showExample"

@@ -9,6 +9,7 @@
 - [RandomXXX](#randomxxx)
 - [RotateXXX](#rotatexxx)
 - [SetXXX](#setxxx)
+- [ShiftPosition](#shiftposition)
 
 ## Align To
 
@@ -328,3 +329,20 @@ hex 数值型，例如 0xff0000 表示红色，默认 0xffffff 15. SetVisible
 16. SetOrigin
 
 值表示 item.size \* value
+
+## ShiftPosition
+
+```js
+/**
+ * 可参考贪吃蛇
+ * items依次沿着前一个item的位置移动，x,y为“头部”坐标，头部根据direction设置为第一个(1)或最后一个(0，默认)
+ * @param {Array.<Phaser.GameObjects.GameObject> | Array.<Phaser.Types.Math.Vector2Like>} items
+ * @param {number} x
+ * @param {number} y
+ * @param {number} direction
+ * @param {Phaser.Types.Math.Vector2Like} output 最后一个元素的x、y，不设置就根据头部依次排到最后
+ */
+ShiftPosition(items, x, y, [direction], [output]);
+```
+
+[code](../phaser3-examples/src/views/actions/shift-position.vue)

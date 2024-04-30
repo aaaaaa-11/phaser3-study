@@ -7,7 +7,7 @@
       id="direction1"
       value="1"
       class="text-gray-800"
-      :checked="direction === 1"
+      :checked="modelValue === 1"
       @change="changeDirection"
     />1</label
   >
@@ -17,7 +17,7 @@
       name="direction"
       id="direction2"
       value="-1"
-      :checked="direction === -1"
+      :checked="modelValue === -1"
       class="text-gray-800 ml-3"
       @change="changeDirection"
     />-1</label
@@ -26,25 +26,22 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 
-const props = withDefaults(
+withDefaults(
   defineProps<{
-    direction: number
+    modelValue: number
   }>(),
   {
-    direction: 1
+    modelValue: 1
   }
 )
 
 const emit = defineEmits<{
-  (e: 'changeDirection', direction: number): void
+  (e: 'update:modelValue', modelValue: boolean): void
 }>()
-
-const direction = ref(props.direction)
 
 // 改变方向
 const changeDirection = (e: Event) => {
-  direction.value = +(e.target as HTMLInputElement).value
-  emit('changeDirection', direction.value)
+  emit('update:modelValue', (e.target as HTMLInputElement).checked)
 }
 </script>
 <style lang="scss" scoped></style>
