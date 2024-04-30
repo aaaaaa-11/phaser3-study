@@ -21,6 +21,7 @@ interface Options {
   spritePaths?: SpriteConfig[]
   addRect?: boolean
   addImg?: boolean
+  physicType?: string
   createFun?: () => void
   updateFun?: () => void
 }
@@ -40,6 +41,7 @@ export default function useGame(options: Options) {
     spritePaths,
     addRect,
     addImg = true,
+    physicType,
     createFun,
     updateFun
   } = options
@@ -120,21 +122,23 @@ export default function useGame(options: Options) {
 
   onMounted(() => {
     // 加载游戏场景
-    const config = {
+    const config: Phaser.Types.Core.GameConfig = {
       type: Phaser.AUTO,
       width: WIDTH,
       height: HEIGHT,
       backgroundColor: '#2d2d2d',
       parent: 'game',
       pixelArt: true,
-      scene: Scene,
-      physics: {
-        default: 'arcade',
-        arcade: {
-          debug: false
-        }
-      }
+      scene: Scene
     }
+    physicType &&
+      (config.physics = {
+        default: physicType,
+        [physicType]: {
+          debug: true,
+          gravity: { y: 0 }
+        }
+      })
     game.value = new Phaser.Game(config)
   })
 
