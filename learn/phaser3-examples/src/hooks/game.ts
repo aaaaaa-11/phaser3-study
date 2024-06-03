@@ -28,7 +28,14 @@ interface Options {
 
 enum GameState {
   LOADING = 'loading',
-  CREATE = 'create'
+  CREATE = 'create',
+  GAMEOVER = 'gameOver'
+}
+
+enum GameEvents {
+  PAUSE = 'pause',
+  RESUME = 'resume',
+  GAMEOVER = 'gameOver'
 }
 
 export class CustomScene extends Phaser.Scene {
@@ -110,6 +117,9 @@ export default function useGame(options: Options) {
 
     update() {
       updateFun?.apply(this)
+      if (gameState.value === GameState.GAMEOVER) {
+        game.value?.pause()
+      }
     }
 
     destroyed() {
@@ -118,6 +128,10 @@ export default function useGame(options: Options) {
       })
       this.imgKeysMap = {}
     }
+  }
+
+  const updateGameState = (state: string) => {
+    gameState.value = state
   }
 
   onMounted(() => {
@@ -140,6 +154,9 @@ export default function useGame(options: Options) {
         }
       })
     game.value = new Phaser.Game(config)
+    game.value.events.on(GameEvents.GAMEOVER, () =>
+      updateGameState(GameState.GAMEOVER)
+    )
   })
 
   onUnmounted(() => {
@@ -157,6 +174,7 @@ export default function useGame(options: Options) {
     sprites,
     gameState,
     GameState,
-    game
+    game,
+    GameEvents
   }
 }

@@ -16,14 +16,18 @@
       @change="getFirstItem"
     />
     图片名称：
-    <select
+    <Select
       v-model="compareForm.img"
-      class="text-gray-800"
       @change="getFirstItem"
-    >
-      <option value="">不选</option>
-      <option v-for="i in imgKeys" :key="i" :value="i">{{ i }}</option>
-    </select>
+      :options="
+        [{ label: '不选', value: '' }].concat(
+          imgKeys.map((i) => ({
+            label: i,
+            value: i
+          }))
+        )
+      "
+    />
     {{ error }}
   </p>
 </template>
@@ -33,6 +37,7 @@ import Phaser from 'phaser'
 import { ref, reactive } from 'vue'
 import useGame from '@/hooks/game'
 import type { CustomScene } from '@/hooks/game'
+import Select from '@/components/common/select.vue'
 
 // 图片地址
 const IMGPATHS = [

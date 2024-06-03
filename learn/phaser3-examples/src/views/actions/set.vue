@@ -1,15 +1,16 @@
 <template>
   <p>
     设置
-    <select v-model="setType" class="text-gray-800" @change="setFun">
-      <option
-        v-for="item in Object.entries(setTextMap)"
-        :key="item[0]"
-        :value="item[0]"
-      >
-        {{ item[1] }}
-      </option>
-    </select>
+    <Select
+      v-model="setType"
+      @change="setFun"
+      :options="
+        Object.entries(setTextMap).map((i) => ({
+          label: i[1],
+          value: i[0]
+        }))
+      "
+    />
   </p>
   <span
     class="mr-5 mt-2"
@@ -17,20 +18,17 @@
     :key="item[0]"
   >
     {{ item[1] }}:
-    <select
+    <Select
       v-model="setParamsForm.value"
       v-if="item[0] === 'value' && setType === SET_TYPE.SET_BLEND_MODE"
-      class="text-gray-800"
       @change="setFun"
-    >
-      <option
-        v-for="item in Object.entries(BlendModesMap)"
-        :key="item[0]"
-        :value="item[1]"
-      >
-        {{ item[0] }}
-      </option>
-    </select>
+      :options="
+        Object.entries(BlendModesMap).map((i) => ({
+          label: i[0],
+          value: i[1]
+        }))
+      "
+    />
     <input
       v-else
       class="text-gray-800 w-16 ml-1"
@@ -54,6 +52,7 @@
 import { reactive, ref } from 'vue'
 import useGame from '@/hooks/game'
 import { BlendModesMap, SET_TYPE } from '@/utils/enums'
+import Select from '@/components/common/select.vue'
 
 // 图片地址
 const IMGPATHS = [

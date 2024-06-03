@@ -2,12 +2,16 @@
   <p>
     旋转rotate方法：
 
-    <select v-model="rotate" class="text-gray-800" @change="updateRotate">
-      <option v-for="i in Object.values(ROTATE_TYPE)" :key="i" :value="i">
-        {{ i }}
-      </option>
-    </select>
-    <span class="mx-3">{{ RotateTextMap[rotate] }}</span>
+    <Select
+      v-model="rotate"
+      @change="updateRotate"
+      :options="
+        Object.values(ROTATE_TYPE).map((i) => ({
+          label: RotateTextMap[i],
+          value: i
+        }))
+      "
+    />
   </p>
   <p>
     <span v-show="rotate === ROTATE_TYPE.ROTATE">
@@ -38,10 +42,7 @@
         />
       </span>
       <span>
-        <Direction
-          :direction="optionsForm.direction"
-          @changeDirection="changeDirection"
-        />
+        <Direction v-model="optionsForm.direction" @change="updateRotate" />
       </span>
     </span>
     <span v-show="rotate !== ROTATE_TYPE.ROTATE">
@@ -88,9 +89,10 @@ import Phaser from 'phaser'
 import { ref, reactive } from 'vue'
 import { ROTATE_TYPE, RotateTextMap } from '@/utils/enums'
 import Direction from './direction.vue'
+import Select from './common/select.vue'
 
 const props = defineProps<{
-  items: Phaser.GameObjects.GameObject[],
+  items: Phaser.GameObjects.GameObject[]
   defaultRotate?: ROTATE_TYPE
 }>()
 
@@ -105,7 +107,7 @@ const optionsForm = reactive({
   value: 0.1,
   step: 1,
   index: 0,
-  direction: 1,
+  direction: '1',
   point: {
     x: 50,
     y: 50
@@ -113,11 +115,6 @@ const optionsForm = reactive({
   angle: 0,
   distance: 0
 })
-
-const changeDirection = (direction: number) => {
-  optionsForm.direction = direction
-  updateRotate()
-}
 
 // 更新图形位置
 const updateRotate = () => {
@@ -129,7 +126,7 @@ const updateRotate = () => {
         optionsForm.value,
         optionsForm.step,
         optionsForm.index,
-        optionsForm.direction
+        +optionsForm.direction
       )
       break
     case ROTATE_TYPE.ROTATE_AROUND:

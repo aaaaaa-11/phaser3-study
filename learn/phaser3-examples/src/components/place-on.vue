@@ -1,12 +1,16 @@
 <template>
   <p>
     place on
-
-    <select v-model="placeOn" class="text-gray-800" @change="changePlaceOn">
-      <option v-for="i in Object.values(PLACE_ON)" :key="i" :value="i">
-        {{ i }}
-      </option>
-    </select>
+    <Select
+      :options="
+        Object.values(PLACE_ON).map((i) => ({
+          label: i,
+          value: i
+        }))
+      "
+      v-model="placeOn"
+      @change="changePlaceOn"
+    />
     <span class="mx-3">{{ PlaceOnTextMap[placeOn] }}</span>
     <span v-show="[PLACE_ON.CIRCLE, PLACE_ON.ELLIPSE].includes(placeOn)"
       >startAngle:
@@ -77,6 +81,7 @@
 import Phaser from 'phaser'
 import { ref, reactive, computed } from 'vue'
 import { PLACE_ON, PlaceOnTextMap, GeoMap, GEO } from '@/utils/enums'
+import Select from './common/select.vue'
 
 const props = defineProps<{
   items: Phaser.GameObjects.GameObject[]

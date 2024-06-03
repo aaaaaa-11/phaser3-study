@@ -23,29 +23,7 @@
       class="text-gray-800 w-16 mr-3"
       @change="changeAngle"
     />
-    方向：
-    <label for="direction1">
-      <input
-        type="radio"
-        name="direction"
-        id="direction1"
-        value="1"
-        class="text-gray-800"
-        :checked="angleForm.direction === 1"
-        @change="changeDirection"
-      />1</label
-    >
-    <label for="direction2">
-      <input
-        type="radio"
-        name="direction"
-        id="direction2"
-        value="-1"
-        :checked="angleForm.direction === -1"
-        class="text-gray-800 ml-3"
-        @change="changeDirection"
-      />-1</label
-    >
+    <Direction v-model="angleForm.direction" @change="changeAngle" />
     <br />
     <label for="runing">
       <input
@@ -63,6 +41,7 @@
 import Phaser from 'phaser'
 import { ref, reactive } from 'vue'
 import useGame from '@/hooks/game'
+import Direction from '@/components/direction.vue'
 
 // 图片地址
 const IMGPATHS = [
@@ -79,7 +58,7 @@ const angleForm = reactive({
   value: 1,
   step: 1,
   index: 0,
-  direction: 1
+  direction: '1'
 })
 
 // 初始化游戏
@@ -99,12 +78,6 @@ const { images } = useGame({
   }
 })
 
-// 改变方向
-const changeDirection = (e: Event) => {
-  angleForm.direction = +(e.target as HTMLInputElement).value
-  changeAngle()
-}
-
 // 是否持续旋转
 const changeRuningState = (e: Event) => {
   runingState.value = (e.target as HTMLInputElement).checked
@@ -118,7 +91,7 @@ const changeAngle = () => {
     angleForm.value,
     angleForm.step,
     angleForm.index,
-    angleForm.direction
+    +angleForm.direction
   )
 }
 </script>

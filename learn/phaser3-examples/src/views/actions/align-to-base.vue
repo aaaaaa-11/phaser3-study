@@ -7,6 +7,7 @@
 import { ref, watch } from 'vue'
 import useGame from '@/hooks/game'
 import Align from '@/components/align.vue'
+import { GameState } from '@/utils/enums'
 
 // 图片地址
 const IMGPATHS = [
@@ -21,7 +22,7 @@ const IMGPATHS = [
 
 const alignRef = ref()
 
-const { images, gameState, GameState } = useGame({
+const { images, gameState } = useGame({
   imgPaths: IMGPATHS,
   addRect: true
 })

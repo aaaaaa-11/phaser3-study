@@ -37,29 +37,7 @@
       class="text-gray-800 w-16 mr-3"
       @change="changeIncXY"
     />
-    方向：
-    <label for="direction1">
-      <input
-        type="radio"
-        name="direction"
-        id="direction1"
-        value="1"
-        class="text-gray-800"
-        :checked="incXYForm.direction === 1"
-        @change="changeDirection"
-      />1</label
-    >
-    <label for="direction2">
-      <input
-        type="radio"
-        name="direction"
-        id="direction2"
-        value="-1"
-        :checked="incXYForm.direction === -1"
-        class="text-gray-800 ml-3"
-        @change="changeDirection"
-      />-1</label
-    >
+    <Direction v-model="incXYForm.direction" @change="changeIncXY" />
     <br />
     <label for="runing">
       <input
@@ -87,6 +65,7 @@ import Phaser from 'phaser'
 import { ref, reactive } from 'vue'
 import useGame from '@/hooks/game'
 import type { CustomScene } from '@/hooks/game'
+import Direction from '@/components/direction.vue'
 
 // 图片地址
 const IMGPATHS = [
@@ -106,7 +85,7 @@ const incXYForm = reactive({
   stepX: 0,
   stepY: 0,
   index: 0,
-  direction: 1
+  direction: '1'
 })
 
 // 初始化游戏
@@ -137,12 +116,6 @@ const { images, WIDTH, HEIGHT } = useGame({
   }
 })
 
-// 改变方向
-const changeDirection = (e: Event) => {
-  incXYForm.direction = +(e.target as HTMLInputElement).value
-  changeIncXY()
-}
-
 // 是否持续旋转
 const changeRuningState = (e: Event) => {
   runingState.value = (e.target as HTMLInputElement).checked
@@ -162,7 +135,7 @@ const changeIncXY = () => {
     incXYForm.stepX,
     incXYForm.stepY,
     incXYForm.index,
-    incXYForm.direction
+    +incXYForm.direction
   )
 }
 </script>

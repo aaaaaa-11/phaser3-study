@@ -12,6 +12,7 @@ import { ref, watch, computed } from 'vue'
 import Align from '@/components/align.vue'
 import OffsetAlign from '@/components/offset.vue'
 import useGame from '@/hooks/game'
+import { GameState } from '@/utils/enums'
 
 // 图片地址
 const IMGPATHS = [
@@ -29,7 +30,7 @@ const offsetRef = ref()
 
 const activeAlign = computed(() => alignRef.value?.activeAlign)
 
-const { images, gameState, GameState } = useGame({
+const { images, gameState } = useGame({
   imgPaths: IMGPATHS,
   addRect: true
 })

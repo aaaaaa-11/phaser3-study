@@ -1,13 +1,20 @@
 <template>
   对齐方式：
-  <select v-model="activeAlign" class="text-gray-800" @change="changeAlignTo">
-    <option v-for="i in aligns" :key="i" :value="i">{{ i }}</option>
-  </select>
-  {{ alignsMap[activeAlign] }} 对齐
+  <Select
+    v-model="activeAlign"
+    :options="
+      aligns.map((i) => ({
+        label: alignsMap[i],
+        value: i
+      }))
+    "
+    @change="changeAlignTo"
+  />
 </template>
 
 <script setup lang="ts">
 import { ref } from 'vue'
+import Select from './common/select.vue'
 
 const props = defineProps<{
   items: Phaser.GameObjects.GameObject[]

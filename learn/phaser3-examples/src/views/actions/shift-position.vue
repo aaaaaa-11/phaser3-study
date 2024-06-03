@@ -23,21 +23,23 @@
   />
   <p>
     动画类型：
-    <select v-model="animateType" class="text-gray-800" @change="addEvent">
-      <option
-        v-for="i in Object.entries(AmimationMap)"
-        :key="i[0]"
-        :value="i[0]"
-      >
-        {{ i[1] }}
-      </option>
-    </select>
+    <Select
+      v-model="animateType"
+      @change="addEvent"
+      :options="
+        Object.keys(AmimationMap).map((i) => ({
+          label: i[1],
+          value: +i[0]
+        }))
+      "
+    />
   </p>
 </template>
 
 <script setup lang="ts">
 import { reactive, ref } from 'vue'
 import useGame, { CustomScene } from '@/hooks/game'
+import Select from '@/components/common/select.vue'
 
 // 图片地址
 const IMGPATHS = [

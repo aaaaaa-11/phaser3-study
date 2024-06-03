@@ -1,28 +1,20 @@
 <template>
   <p>
     方向：
-    <label for="direction1">
-      <input
-        type="radio"
-        name="direction"
-        id="direction1"
-        :value="animationKey.WALK_LEFT"
-        class="text-gray-800"
-        :checked="formState.direction === animationKey.WALK_LEFT"
-        @change="changeDirection"
-      />朝左</label
-    >
-    <label for="direction2" class="mr-4">
-      <input
-        type="radio"
-        name="direction"
-        id="direction2"
-        :value="animationKey.WALK_RIGHT"
-        :checked="formState.direction === animationKey.WALK_RIGHT"
-        class="text-gray-800 ml-3"
-        @change="changeDirection"
-      />朝右</label
-    >
+    <Radio
+      :options="[
+        {
+          label: '朝左',
+          value: animationKey.WALK_LEFT
+        },
+        {
+          label: '朝右',
+          value: animationKey.WALK_RIGHT
+        }
+      ]"
+      v-model="formState.direction"
+      @change="changeDirection"
+    />
     <Align ref="alignRef" :items="sprites" @changeAlignTo="updateGridAlign" />
   </p>
   <p>
@@ -83,6 +75,7 @@ import type { Ref } from 'vue'
 import type { CustomScene } from '@/hooks/game'
 
 import Align from '@/components/align.vue'
+import Radio from '@/components/common/radio.vue'
 
 // 动画key
 const animationKey = {
@@ -149,8 +142,7 @@ const { sprites } = useGame({
 })
 
 // 改变方向
-const changeDirection = (e: Event) => {
-  formState.direction = (e.target as HTMLInputElement).value
+const changeDirection = () => {
   sprites.forEach((s) => {
     s.play(formState.direction)
   })

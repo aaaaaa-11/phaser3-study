@@ -10,6 +10,8 @@
 - [RotateXXX](#rotatexxx)
 - [SetXXX](#setxxx)
 - [ShiftPosition](#shiftposition)
+- [Spread](#spread)
+- [WrapInRectangle](#wrapinrectangle)
 
 ## Align To
 
@@ -346,3 +348,37 @@ ShiftPosition(items, x, y, [direction], [output]);
 ```
 
 [code](../phaser3-examples/src/views/actions/shift-position.vue)
+
+[贪吃蛇](../phaser3-examples/src/views/actions/snake.vue)
+
+## Spread
+
+```js
+/**
+ * 让items的property在min~max之间均匀分布
+ * @param { array | Array.<Phaser.GameObjects.GameObject> } items
+ * @param {string} property item属性
+ * @param {number} min
+ * @param {number} max
+ * @param {boolean} inc property属性值是否递增，true每次在上一次的基础上增加，false每次items属性都是从min~max
+ */
+Spread(items, property, min, max, [inc]);
+
+// 例如，假设items为5个GameObject，初始x均为100
+Spread(items, "x", 0, 100, true); // x依次为：100, 125, 150, 175, 200
+Spread(items, "x", 0, 100, true); // 100, 150, 200, 250, 300
+Spread(items, "x", 0, 100, true); // 100, 175, 250, 325, 400
+Spread(items, "x", 0, 100, false); // 100, 125, 150, 175, 200
+```
+
+## WrapInRectangle
+
+```js
+/**
+ * 保证items的x和y在给定的矩形区域中
+ * @param { array | Array.<Phaser.GameObjects.GameObject> } items
+ * @param {Phaser.Geom.Rectangle} rect 矩形区域
+ * @param {number} padding 矩形区域每一侧增加的区域
+ */
+WrapInRectangle(items, rect, [padding]);
+```

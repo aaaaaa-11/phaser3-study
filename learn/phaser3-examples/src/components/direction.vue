@@ -1,47 +1,50 @@
 <template>
   direction:
-  <label for="direction1">
-    <input
-      type="radio"
-      name="direction"
-      id="direction1"
-      value="1"
-      class="text-gray-800"
-      :checked="modelValue === 1"
-      @change="changeDirection"
-    />1</label
-  >
-  <label for="direction2">
-    <input
-      type="radio"
-      name="direction"
-      id="direction2"
-      value="-1"
-      :checked="modelValue === -1"
-      class="text-gray-800 ml-3"
-      @change="changeDirection"
-    />-1</label
-  >
+  <Radio
+    :options="[
+      {
+        label: '1',
+        value: '1'
+      },
+      {
+        label: '-1',
+        value: '-1'
+      }
+    ]"
+    v-model="direction"
+    @change="changeDirection"
+  />
 </template>
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed } from 'vue'
+import Radio from './common/radio.vue'
 
-withDefaults(
+const props = withDefaults(
   defineProps<{
-    modelValue: number
+    modelValue: string
   }>(),
   {
-    modelValue: 1
+    modelValue: '1'
   }
 )
 
+const direction = computed({
+  get() {
+    return props.modelValue
+  },
+  set(value) {
+    emit('update:modelValue', value)
+  }
+})
+
 const emit = defineEmits<{
-  (e: 'update:modelValue', modelValue: boolean): void
+  (e: 'update:modelValue', value: string): void
+  (e: 'change', value: Event): void
 }>()
 
 // 改变方向
 const changeDirection = (e: Event) => {
-  emit('update:modelValue', (e.target as HTMLInputElement).checked)
+  emit('change', e)
 }
 </script>
 <style lang="scss" scoped></style>
