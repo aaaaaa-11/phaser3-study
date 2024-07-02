@@ -1,3 +1,15 @@
+export enum GameState {
+  LOADING = 'loading',
+  CREATE = 'create',
+  GAMEOVER = 'gameOver'
+}
+
+export enum GameEvents {
+  PAUSE = 'pause',
+  RESUME = 'resume',
+  GAMEOVER = 'gameOver'
+}
+
 export enum PLACE_ON {
   CIRCLE = 'PlaceOnCircle',
   ELLIPSE = 'PlaceOnEllipse',

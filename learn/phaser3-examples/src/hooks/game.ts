@@ -1,4 +1,5 @@
 import Phaser from 'phaser'
+import { GameEvents, GameState } from '@/utils/enums'
 import { onMounted, onUnmounted, ref } from 'vue'
 
 const ORIGIN = location.origin // 项目域名
@@ -7,36 +8,6 @@ const ORIGIN = location.origin // 项目域名
 const WIDTH = innerWidth * 0.8
 const HEIGHT = innerHeight * 0.8
 const game = ref<Phaser.Game>()
-
-type Image = Phaser.GameObjects.Image
-type Sprite = Phaser.GameObjects.Sprite
-
-interface SpriteConfig {
-  path: string
-  config: Phaser.Types.Loader.FileTypes.ImageFrameConfig
-}
-
-interface Options {
-  imgPaths?: string[]
-  spritePaths?: SpriteConfig[]
-  addRect?: boolean
-  addImg?: boolean
-  physicType?: string
-  createFun?: () => void
-  updateFun?: () => void
-}
-
-enum GameState {
-  LOADING = 'loading',
-  CREATE = 'create',
-  GAMEOVER = 'gameOver'
-}
-
-enum GameEvents {
-  PAUSE = 'pause',
-  RESUME = 'resume',
-  GAMEOVER = 'gameOver'
-}
 
 export class CustomScene extends Phaser.Scene {
   imgKeys: string[] = []
@@ -161,6 +132,8 @@ export default function useGame(options: Options) {
 
   onUnmounted(() => {
     // 销毁游戏
+    images.forEach((i) => i.destroy(true))
+    sprites.forEach((i) => i.destroy(true))
     game.value?.destroy(true)
     images = []
     sprites = []
@@ -173,8 +146,6 @@ export default function useGame(options: Options) {
     images,
     sprites,
     gameState,
-    GameState,
-    game,
-    GameEvents
+    game
   }
 }

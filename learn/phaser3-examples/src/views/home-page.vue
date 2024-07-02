@@ -66,7 +66,14 @@ const examples: ListItem[] = exampleRoutes.map((i) => {
 })
 // 显示子列表
 const toggleChildren = (item: ListItem) => {
-  activeItem.value = activeItem.value ? undefined : item
+  if (activeItem.value?.name !== item.name) {
+    showExample.value = false
+  }
+  activeItem.value = activeItem.value
+    ? activeItem.value?.name !== item.name
+      ? item
+      : undefined
+    : item
 }
 
 const showExample = ref<boolean>(false)
